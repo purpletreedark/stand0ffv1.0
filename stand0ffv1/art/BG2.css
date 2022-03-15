@@ -1,0 +1,14 @@
+html {
+   height: 100%;
+   -webkit-animation: BG 10s linear normal infinite;
+   animation: BG 10s linear normal infinite;
+  }
+
+@keyframes BG {
+   0% {background-color: Red;}
+   20% {background-color: Teal;}
+   40% {background-color: Purple;}
+   60% {background-color: Orange;}
+   80% {background-color: Green;}
+   100% {background-color: Red;}
+   }

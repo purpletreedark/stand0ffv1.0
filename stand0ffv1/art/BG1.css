@@ -1,0 +1,12 @@
+html {
+   height: 100%;
+   -webkit-animation: BG 4s linear normal infinite;
+   animation: BG 4s linear normal infinite;
+  }
+@keyframes BG {
+   0% {background-image: linear-gradient(60deg, White,White,Silver,Black,Silver);}
+   25% {background-image: linear-gradient(60deg, Silver,White,White,Silver,Black);}
+   50% {background-image: linear-gradient(60deg, Black,Silver,White,White,Silver);}
+   75% {background-image: linear-gradient(60deg, Silver,Black,Silver,White,White);}
+   100% {background-image: linear-gradient(60deg, White,Silver,Black,Silver,White);}
+   }
