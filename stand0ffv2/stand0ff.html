@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="en"> 
+<head>
+	<meta charset="utf-8">
+	<!--- Name: John "Jack" Clouthier
+		Bullet Game 2
+		Date Created: December 10th 2020
+		Filename: stand0ff.html
+		::CREDITS::
+		Art - Ashlyn "Mo" Morris (Town Character Portaits), Kaylee "Finn" Finnegan (Title Screen, Gameover Screen, Boss Portraits), John "Jack" Clouthier (Animations, Enviroment, Arena Portraits).
+		JavaScript, JQuery and HTML Coding - John "Jack" Clouthier 
+		Writing - John "Jack" Clouthier
+		Music and Sound Production - John "Jack" Clouthier 
+		SPECIFIC MUSIC CREDITS AND SAMPLED SONGS CAN BE FOUND IN THE README.TXT FILE, AND ON LINE 87 OF THIS DOCUMENT.
+		Editing/Proof Reading - Kaylee "Finn" Finnegan
+		Play Testing - Ashlyn "Mo" Morris, Kaylee "Finn" Finnegan, Ethan "RegalPunk" Leonard, John "Jack" Clouthier, Cameron "Yogurt Pretzel Cyptid" Ross.
+		--> 
+	
+	<title>&#x1f449;stand0ff&#x1f449;</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="John, Clouthier, Bullet, Game 2, stand0ff, stand, 0ff, Index">
+	<meta name="author" content="John (Jack) Clouthier">
+	<meta name="description" content="John Clouthier's stand0ff">
+	<script src="jquery-3.5.1.min.js"></script>
+	<link id= "BG" href="art/BG1.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<script>
+//RNG Function//
+function rng(x, y) { return Math.floor(Math.random() * x + y); }
+
+//Generate sound effects Function//
+function sound(src, bg) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+	if (bg == true) {this.sound.setAttribute("loop", "loop");}
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){this.sound.play();}
+    this.stop = function(){this.sound.pause();} 
+}
+
+
+//Variable Definition//
+var ebc = ["c","c","c","r","r","r","s"]
+var pbc = ["c","r","s","g"]
+var names = ["THE BOSS","timmy & tommy","bubba","bigboy","rocky","lilbboy","prudence","killer","snake","scrump","yuji","santa","a pack of coordinated rats","dracula","monkey","billy"];
+var idolmachine = ["ricochet","dust","drain"];
+var ability = ["ricochet","drain","dust","???"];
+var actverb = ["dashed","ran","rolled","lept","sprinted"];
+var behavior = ["stiff","smart","fighty","flighty"];
+var dinerlog = ["hey, your pockets are looking pretty empty. if you need a job to work, type 'w' and i'll let you work for some bullets.","hey champ, dodging will decrease your chance of being hit and decrease your chance of hitting your target.","lunging will increase your chance of being hit and increase your chance of hitting your target.","lunging at someone without any bullets can be an easy way to end the match.","hey champ! DUST tends to do well against DRAIN since it stops your opponent from hitting you as often and healing. Did you know that?","did you know that DRAIN users tend to survive against an onslaught of RICOCHETing bullets?","i heard that RICOCHETing bullets will always hit their target, even in a DUST cloud. watch out for those, champ.","buying idols from the exchange will let you change your ability between shots. keep that in mind if you feel stuck in a match, champ.","i heard something weird happens if you throw special bullets in the hole outside of the exchange. you might need a shovel first, though.","the competitor with the highest kill streak has disappeared in the middle of a duel. watch out for that, champ.","i heard that the inn keeper was a competitor like you, champ. i wonder if they'll step on to field again or just keep playing the ring.","i heard that vampires lunge often, champ. have you heard that?","i heard that if you're healthy enough you can 'rob' almost every store in town, but they will close forever. you'd never do that to me though... right, champ?","i've been hearing some rumbling at night from the exchange. i wonder what that dude is up to... i can barely get to sleep at night.","i heard that giant's blood in small doses can heighten your strength and endurance.","i really appreciate you offering to work here. the extra help has been really nice, champ!","the giant that runs the hospital can be a bit of grouch. as long as you have the money for them, you should be okay."]
+var dinerjoblog = ["hey champ, you look like you're new to all of this, so i'll give you a run down while you're helping out.","after you sleep at the inn, you'll get to sign up to fight in tomorrow's standoff duel. but that's why you're here, right? to make some money here? i'm not one to judge.","fighting in the arena is pretty easy. once you load your gun with the bullets you have, you and your opponent will take turns shooting eachother.","the last person standing gets a cut of the night's profits from the gambling ring. their room will be compensated for during their next night at the inn.","if you want any more tips, don't be afraid to pop in!",]
+var shifts = 0;
+var dinert = 0;
+var damage = 0;
+var hole = {depth: 1, figures: 0, workers: 0, bullets: 0, plantday:0, cavern:true, boss:true};
+var cavern = {dialog:[], heart:true, leave:false}
+var day = 0;
+var n = 0;
+var stage = 0; 
+var cycle = {count: 0, maxpp: 40};
+var round = {tclip:0, cturn:0, pmaxhp:0, emaxhp:0}; 
+var player = {name:"", hp:10, hpup:0, acc:50, ability:"???", clip:[], tb:0, cb:0, rb:0, sb:0, gb:0, items:[], energy:5, energyup:0, pp:0, shovels:0};
+var enemy = {name:"", hp:10, acc:50, ability:"???", clip:[], tb:0, cb:0, rb:0, sb:0, behavior:"", choice:""};
+var boss = {status:true, name: "The Queen Beneath It All", hp: 10, ability:"???", choicelist: [], choice:"", clip: [], pp:50, workers:0, quotetrack:0, quotes:["THEY FEARED ME AND LOCKED ME AWAY","I KNEW YOU'D ARRIVE EVENTUALLY","HOW MANY TIMES HAVE YOU DONE THIS NOW","WHY COULDNT YOU HAVE WAITED AND LET ME END IT ALL"]}
+var input = "";
+var output = "";
+var dialogue = "";
+var thoughts = "";
+var name = null;
+var open = {exchange: true, hospital: true, diner: true, basement: false, library: false, hole:false, job: false};
+var twnloc = "";
+
+//Sound Definition//
+//FOLLOWING SOUNDS WERE RECORDED IN HOUSE//
+var enter;
+enter = new sound("sound/enter.mp3");
+var pop;
+pop = new sound("sound/pop.mp3");
+var ddd;
+ddd = new sound("sound/ddd.mp3", true);
+var town_theme;
+town_theme = new sound("sound/town_theme.mp3", true);
+
+//I DO NOT OWN THE RIGHTS TO THE FOLLOWING SAMPLES, ALL EXTERNAL MEDIA ARE ONLY USED FOR EDUCATIONAL PURPOSES ONLY FOR THIS PROGRAM. USAGE OF THIS MUSIC WAS NOT DONE TO SUPLANT OR EXCEED THE METHODS OF DISTRIBUTION OF THE ORIGINAL SONGS.
+//NONE OF THE SAMPLES OR SONGS SAMPLED MAY BE DISTRIBUTED FOR COMMERCIAL USE, PLEASE SUPPORT THE ORIGINAL OR OFFICAL RELEASES OF THESE SONGS.
+//A PLAYLIST OF SAMPLED SONGS WILL BE PROVIDED IN THE README.TXT FILE AND ARE EASILY STREAMABLE ON MOST ONLINE PLATFORMS, PLEASE SUPPORT THE ORIGINAL OR OFFICAL RELEASES OF THESE SONGS.
+//Sampling and use of these songs are intended to demonstrate knowledge and usage of music and sound to establish tone in a gameplay setting.
+
+//Primary sample taken from "midnight cruisin'" by Kingo Hamada 
+var exchange_theme;
+exchange_theme = new sound("sound/exchange_theme.mp3", true);
+
+//Primary sample taken from "Coral Reef" by Shigeru Suzuki 
+var diner_theme;
+diner_theme = new sound("sound/diner_theme.mp3", true);
+
+//Primary sample taken from "Tezeta" by Hailu Mergia AND The Walias
+var hospital_theme;
+hospital_theme = new sound("sound/hospital_theme.mp3", true);
+
+//Primary sample taken from "La Fiesta" by Chick Corea
+var inn_theme;
+inn_theme = new sound("sound/inn_theme.mp3", true);
+
+//Primary sample taken from "La Fiesta" by Chick Corea
+var basement_theme;
+basement_theme = new sound("sound/basement_theme.mp3", true);
+
+//Primary sample taken from "PERPETUAL (MOVEMENT)" by Jun Fukamachi
+var hole_theme;
+hole_theme = new sound("sound/hole_theme.mp3", true);
+
+//Primary sample taken from "New Person, Same Old Mistakes" by Tame Impala, with an instrumental remixed by Hadi Siddiqui
+var arena_theme;
+arena_theme = new sound("sound/arena_theme.mp3", true);
+
+//Primary sample taken from "Les Deux Poissons" by Dominique Guiot
+var trickster_theme;
+trickster_theme = new sound("sound/trickster_theme.mp3", true);
+
+//Primary samples taken from "La Fiesta" by Chick Corea AND "PERPETUAL (MOVEMENT)" by Jun Fukamachi
+var boss_theme;
+boss_theme = new sound("sound/boss_theme.mp3", true);
+
+//Primary sample taken from "Tong Poo" by YELLOW MAGIC ORCHESTRA 
+var end_theme;
+end_theme = new sound("sound/end_theme.mp3", true);
+
+//Primary sample taken from "Tong Poo" by YELLOW MAGIC ORCHESTRA 
+var cycle_theme;
+cycle_theme = new sound("sound/cycle_theme.mp3", true);
+
+
+//Enter keyboard feature//
+$(document).keypress(function(event){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode == '13'){
+        buttonclicked(); 
+		enter.play();
+    } else {pop.play();}
+});
+
+
+//Action//
+function buttonclicked() {
+	//Text and X output clean and input gather//
+
+	$("#txtout").html("");
+	input = $("#txtin").val();
+
+	//Stages//
+	//Stage 0 - Start//
+	if (stage == 0) {
+		//Stage 0 - Music, Background and Thoughts//
+		ddd.play();
+		arena_theme.stop();
+		cycle_theme.stop();
+		$("#mindspace").attr("title", "... what is my name?");
+		//Stage 0 - Player Set Up//
+		output = "Set your player name. ";
+		if (input != "") {
+			player.name = input.toUpperCase();
+			output = "Your character's name is now set to " + player.name+". ";
+			output += player.name+" reads a sign saying 'to enter the arena you must spend a night at the inn'. "
+			$("#mindspace").attr("title", "... where is the inn?");			
+			//Stage 0 - Player Cheats//
+			if (player.name == "80RB") {
+				player.cb = 0;
+				player.rb = 80;
+				player.sb = 0;
+				output += "__Eighty Bullet Cheat Activated__";
+			} else if (player.name == "3IDL") {
+				player.items = ["ricochet", "drain", "dust"];
+				idolmachine = [];
+				output += "__Three Idols Cheat Activated__"; 
+			} else if (player.name == "1WEK") {
+				day = 7;
+				output += "__Week Late Cheat Activated__";
+			} else if (player.name == "???%") {
+				player.pp = 100
+				output += "__Decended God Cheat Activated__";
+			} else if (player.name == "1HYD") {
+				hole.depth = 99
+				output += "__100 Yard Hole Cheat Activated__";
+			} else if (player.name == "QSLR") {
+				hole.depth = 99;
+				player.pp = 40;
+				hole.workers = 10;
+				player.items = ["ricochet", "drain", "dust"];
+				idolmachine = [];
+				output += "__Boss Test Cheat Activated__";
+			}
+			stage = 1;
+		}
+
+	//Stage 1 - Town Wander//
+	} else if (stage == 1) {
+		//Stage 1 - Choice, twnloc is empy//
+		if (twnloc == "") {
+			//Stage 1 - Choice - Background, Music, Thoughts, Picture//
+			$("#BG").attr("href", "art/BG1.css");
+			ddd.stop();
+			arena_theme.stop();
+			exchange_theme.stop();
+			inn_theme.stop();
+			boss_theme.stop();
+			basement_theme.stop();
+			hospital_theme.stop();
+			diner_theme.stop();
+			hole_theme.stop();
+			town_theme.play();
+			$("#mindspace").attr("title", "... where do i go?");
+			$("#picture").attr("src", "art/town.png");
+			$("#picture").attr("title", "...");
+			//Stage 1 - Choice - I/O//
+			output = player.name+" can go to </br> "
+			if (open.exchange == true) {output += "the exchange (type: 'exchange')</br> ";}
+			if (open.hospital == true) {output += "the hospital (type: 'hospital')</br> ";}
+			if (open.diner == true) {output += "the diner (type: 'diner')</br>";}
+			if (open.basement == true) {output += "the basement (type: 'basement')</br> ";}
+			if (open.hole == true) {output += "the hole (type: 'hole')</br>";}
+			if (open.library == true) {output += "the library: (type 'library') </br>";}
+			output += "the inn (type: 'inn') </br> or retire (type: 'retire' (this ends your game)).";
+			if (input == "exchange" && open.exchange == true) {
+				output = player.name+" enters the exchange  ";
+				twnloc = "exchange";
+				dialogue = "store owner: 'welcome to the exchange.'"
+				$("#picture").attr("src", "art/exchange.png");
+			} else if (input == "hospital" && open.hospital == true) {
+				output = player.name+" enters the hospital ";
+				twnloc = "hospital";
+				dialogue = "hospital worker: 'hello, welcome to the hospital.'";
+				$("#picture").attr("src", "art/hospital.png");
+			} else if (input == "diner" && open.diner == true) {
+				output = player.name+" enters the diner ";
+				twnloc = "diner";
+				dialogue = "person behind the counter: 'hey champ! how are you doing?'";
+				$("#picture").attr("src", "art/diner.png");
+			} else if (input == "basement" && open.basement == true) {
+				output = player.name+" enters the basement ";
+				twnloc = "basement";
+				dialogue = "figures in the dark: '...'";
+				$("#picture").attr("src", "art/basement.png");
+			} else if (input == "hole" && open.hole == true) {
+				output = player.name+" walks to the hole ";
+				twnloc = "hole";
+				$("#picture").attr("src", "art/hole.png");
+			//Stage 1 - Retire//
+			} else if (input == "retire") {
+				output = player.name+" retires";
+				stage = 5;
+			} else if (input == "inn") {
+				output = player.name+" enters the inn ";
+				twnloc = "inn";
+				dialogue = "inn keeper: 'welcome to the inn.'"
+				$("#picture").attr("src", "art/inn.png");
+			} 
+		//Stage 1 - Exchange//
+		} else if (twnloc == "exchange") {
+			//Stage 1 - Exchange - Picture, Background, Music and Thoughts//
+			town_theme.stop();
+			exchange_theme.play();
+			$("#mindspace").attr("title", "... this place has seen better days.");
+			$("#picture").attr("src", "art/exchange_in.png");
+			$("#picture").attr("title","this will all be over soon.");
+			//Stage 1 - Exchange  - I/O//
+			output = "trade bullets for different items.</br> to trade 2 regular bullets for 3 cheap bullets, (type: 'rc').</br> For the opposite, (type: 'cr'). </br> To trade 3 regular bullets for 1 special bullet, (type: 'rs').</br> For the opposite, (type: 'sr').</br> To trade 1 regular bullet for 1 idol, (type: 'i').</br> To trade 2 regular bullets for 1 shovel, (type: 's').</br> (type: 'bye' to leave)";
+			dialogue = "store owner: 'what do you need?'"
+			if (input == "rc") {
+				if (player.rb >= 2) {
+					player.rb = player.rb - 2;
+					player.cb = player.cb + 3;
+					output = player.name+" traded 2 regular bullets for 3 cheap bullets."
+					dialogue = "store owner: 'here you go.'"
+				} else {dialogue = "store owner: 'looks like you can't afford 3 cheap bullets.'"};
+			} else if (input == "rs") {
+				if (player.rb >= 3) {
+					player.rb = player.rb - 3;
+					player.sb = player.sb + 1;
+					output = player.name+" traded 3 regular bullets for 1 special bullet."
+					dialogue = "store owner: 'here you go.'"
+				} else {dialogue = "store owner: 'looks like you can't afford a special bullet.'"};
+			} else if (input == "sr") {
+				if (player.sb >= 1) {
+					player.sb = player.sb - 1;
+					player.rb = player.rb + 3;
+					output = player.name+" traded 1 special bullet for 3 regular bullet."
+					dialogue = "store owner: 'here you go.'"
+				} else {dialogue = "store owner: 'looks like you can't afford a regular bullet.'"};
+			} else if (input == "cr") {
+				if (player.cb >= 3) {
+					player.cb = player.cb - 3;
+					player.rb = player.rb + 2;
+					output = player.name+" traded 3 cheap bullets for 2 regular bullet."
+					dialogue = "store owner: 'here you go.'"
+				} else {dialogue = "store owner: 'looks like you can't afford a regular bullet.'"};
+			} else if (input == "i") {
+				if (player.rb >= 1) {
+					if (idolmachine.length > 0) {
+						player.items.push(idolmachine[0]);
+						output = player.name+" traded in 1 regular bullets and recieved a " + idolmachine[0] + " idol."
+						dialogue = "store owner: 'here you go. no refunds.'"
+						idolmachine.shift();
+						player.rb = player.rb - 1;
+					} else {dialogue = "store owner: 'looks like you have them all.'";}
+				} else {dialogue = "store owner: 'sorry, but you can't afford an idol.'";}
+			} else if (input == "s") {
+				if (player.rb >= 2) {
+					if (player.shovels == 0) {open.hole = true};
+					player.rb = player.rb - 2;
+					player.shovels = player.shovels + 1;
+					output = player.name+" traded 2 regular bullets for 1 shovel."
+					dialogue = "store owner: 'here you go try digging a hole or something. no refunds.'"
+				} else {dialogue = "store owner: 'looks like you can't afford a shovel.'"};
+			} else if (input == "rob" && player.hp >= 15) {
+				output = player.name+" robbed the exchange and aquired 10 of each bullet type.";
+				dialogue = "store owner: 'hey, hey! take it easy. just take this, then get out of here.'"
+				player.cb = player.cb + 10;
+				player.rb = player.rb + 10;
+				player.sb = player.sb + 10;
+				open.exchange = false;
+				twnloc = "";
+				$("#picture").attr("src", "art/exchange.png");
+			} else if (input == "bye") {
+				output = player.name+" leaves the exchange";
+				dialogue = "store owner: 'come again soon!'"
+				$("#picture").attr("src", "art/exchange.png");
+				twnloc = "";
+			}
+		//Stage 1 - Hospital//
+		} else if (twnloc == "hospital") {
+			//Stage 1 - Hospital - Picture, Background, Music and Thoughts//
+			town_theme.stop()
+			hospital_theme.play()
+			$("#mindspace").attr("title", "... wow, they're tall.");
+			$("#picture").attr("title", "why am i here.");
+			$("#picture").attr("src", "art/hospital_in.png");
+			//Stage 1 - Hospital - I/O//
+			n = player.hpup + 4
+			output = "trade regular bullets for different services.</br> to trade "+n+" regular bullets for a 2 point health upgrade, (type: 'u').</br> To trade 1 regular bullet to heal any damage, (type: 'h').</br> to leave (type: 'bye').";
+			dialogue = "hospital worker: 'what do you want.'";
+			if (input == "u") {
+				if (player.rb >= n) {
+				output = player.name+" traded "+n+" regular bullets for a health upgrade";
+				dialogue = "hospital worker: 'alright hold still. this may take a bit.'";
+				player.hpup = player.hpup + 2;
+				player.energyup = player.energyup + 1; 
+				player.hp = 10 + player.hpup;
+				player.rb = player.rb - n;
+				} else {dialogue = "hospital worker: 'i won't touch you if you can't pay me.'";}
+			} else if (input == "h" && player.hp != 10 + player.hpup) {
+				if (player.rb >= 1) {
+				output = player.name+" traded 1 regular bullet and was restored to full health";
+				dialogue = "hospital worker: 'yikes, you don't need to yell at me. just take one of these.'";
+				player.hp = 10 + player.hpup;
+				player.rb = player.rb - 1;
+				}  else {dialogue = "hospital worker: 'you can't afford a full heal, stop wasting my time.'";}
+			} else if (input == "rob" && player.hp >= 15) {
+				output = player.name+" robbed the hospital and aquired 10 of each bullet type.";
+				dialogue = "hospital worker: 'fine! just take it and leave!'";
+				player.cb = player.cb + 10;
+				player.rb = player.rb + 10;
+				player.sb = player.sb + 10;
+				open.hospital = false;
+				$("#picture").attr("src", "art/hospital.png");
+				twnloc = "";
+			} else if (input == "bye") {
+				output = player.name+" leaves the hospital";
+				dialogue = "hospital worker: 'okay bye.'";
+				twnloc = "";
+				$("#picture").attr("src", "art/hospital.png");
+			}
+		//Stage 1 - Diner//
+		}  else if (twnloc == "diner") {
+			//Stage 1 - Diner - Picture, Background, Music and Thoughts//
+			town_theme.stop()
+			diner_theme.play()
+			$("#mindspace").attr("title", "... they seem nice");
+			$("#picture").attr("title", "another day, another bullet in the bank.");
+			$("#picture").attr("src", "art/diner_in.png");
+			//Stage 1 - Diner - I/O//
+			output = "to talk to the person behind the counter, (type: 't').</br>";
+			if (open.job == true) {
+				output += "to work one shift, (type: 'w'). </br>";
+			}
+			output += "to leave, (type: 'bye').";
+			dialogue = "person behind the counter: 'what's up, champ?'";
+			if (input == "t") {
+				n = dinert % dinerlog.length;
+				dialogue = "person behind the counter: '"+dinerlog[n]+"'";
+				dinert = dinert + 1;
+				open.job = true;
+			} else if (input == "w") {
+				if (player.energy > 0 && open.job == true) {
+					n = shifts % dinerjoblog.length;
+					player.energy = player.energy - 1;
+					player.rb = player.rb + 3;
+					output = player.name+" worked a shift at the diner and earned some regular bullets"
+					dialogue = "person behind the counter: '"+dinerjoblog[n]+"'";
+					shifts = shifts + 1;
+				}
+			}else if (input == "rob" && player.hp >= 15) {
+				output = player.name+" robbed the diner and aquired 10 of each bullet type.";
+				dialogue = "person behind the counter: 'are you serious, champ? after all we've been through? well, good luck out there. you'll need it.'";
+				player.cb = player.cb + 10;
+				player.rb = player.rb + 10;
+				player.sb = player.sb + 10;
+				$("#picture").attr("src", "art/diner.png");
+				open.diner = false;
+				twnloc = "";
+			} else if (input == "bye") {
+				output = player.name+" leaves the diner";
+				dialogue = "person behind the counter: 'see you later, champ!'";
+				$("#picture").attr("src", "art/diner.png");
+				twnloc = "";
+			}
+		//Stage 1 - Inn//
+		} else if (twnloc == "inn") {
+			//Stage 1 - Inn - Picture, Background, Music and Thoughts//
+			town_theme.stop()
+			inn_theme.play()
+			$("#mindspace").attr("title", "... who is this?");
+			if (open.basement == false) {
+				$("#picture").attr("title", "ask me about the 'basement'");
+				$("#mindspace").attr("title", "... who is this?");
+			} else {
+				$("#picture").attr("title", "you can't read me that easy. i've done this longer than you, kid.");
+				$("#mindspace").attr("title", "... how are they doing that?");
+			}
+			$("#picture").attr("src", "art/inn_in.png");
+			//Stage 1 - Inn - I/O//
+			output = player.name+" can do many things at the inn.</br> To stay for the night, (type: 's').</br> To pray at one of the inn's 3 idols of battle, (type either: 'ricochet', 'drain', or 'dust').</br> ( to leave type: 'bye').";
+			dialogue = "inn keeper: 'need a room? or a quiet place to reflect between the idols of battle?'"
+			if (input == "ricochet" || input == "drain" || input == "dust") {
+				player.ability = input;
+				output = player.name+" now has the " + player.ability + " ability."
+				if (player.ability == "ricochet") {output += " Trusting in the ricochet will ensure "+player.name+"'s bullet will hit their target even if it misses";}
+				if (cavern.heart == true) {
+				if (player.ability == "drain") {output += " By embracing vampirism "+player.name+" will heal every time they hit their target";}
+				} else {
+					output += " From indulging in the giants heart, the vampirism was then cured instantly inside "+player.name+" leaving nothingness.";
+					player.ability = "???";
+				}
+				if (player.ability == "dust") {output += " By making a pact with the dust, every shot will decrease the enemy's accuracy in their next shot";}
+			} else if (input == "s") {
+				player.tb = player.cb + player.rb + player.sb
+				if (boss.status == true && day > 11) {
+						stage = 7;
+						output = "The ground begins to shake"
+				} else if (player.tb > 4 || day > 0) {
+					output = player.name+" stays the night at the inn and continues to the next day.";
+					dialogue = "inn keeper: 'here's the key to your room. good luck tomorrow.'"
+					day = day + 1
+					twnloc = "";
+					stage = 2;
+					if (cavern.heart == true) {
+						player.energy = 5 + player.energyup;
+					}
+				} else {
+					dialogue = "inn keeper: 'sorry kid, i can't let you stay the night if you don't have enough bullets to enter. try getting a job at the diner.'"
+				}
+			} else if (input == "basement" && open.basement == false) {
+				dialogue = "inn keeper: 'that was a test, kid. you passed. take this key. the entrance to the basement is around back if you're interested in seeing what's really going on.'"
+				open.basement = true;
+				output = player.name+" recieved a dark key."
+			} else if (input == "bye") {
+				output = player.name+" leaves the inn";
+				twnloc = "";
+				dialogue = "inn keeper: 'i'll be here when you're ready.'"
+				$("#picture").attr("src", "art/inn.png");
+			}
+		//Stage 1 - Basement//
+		} else if (twnloc == "basement") {
+			//Stage 1 - Basement - Picture, Background, Music and Thoughts//
+			town_theme.stop()
+			basement_theme.play()
+			if (player.pp == 0) {
+				$("#mindspace").attr("title", "WELCOME. DO YOU WANT TO LEARN MORE? (TYPE: 'm').");
+				$("#picture").attr("title", "WELCOME. DO YOU WANT TO LEARN MORE? (TYPE: 'm').");
+			} 
+			if (player.pp > 0 && day < 2) {
+				$("#mindspace").attr("title", "YOU KNOW TOO LITTLE");
+				$("#picture").attr("title", "YOU KNOW TOO LITTLE");
+			}
+			if (player.pp > 0 && day > 1) {
+				$("#mindspace").attr("title", "DO YOU SEEK AN ADVANTAGE IN COmBAT? (TYPE: 'm').");
+				$("#picture").attr("title", "DO YOU SEEK AN ADVANTAGE IN COmBAT? (TYPE: 'm')");
+			}
+			output = "type 'bye' to leave."
+			$("#picture").attr("src", "art/basement_in.png");
+			//Stage 1 - Basement - I/O//
+			dialogue = "figures in the dark: '...'"
+			 if (input == "m") {
+				if (player.pp == 0) {
+					thoughts = "We can fill your mind with things you want to know. You have taken your first step in a long but bountiful journey.";
+					player.pp = 1
+					$("#dst").text(" T H E   M I N D S C A P E ");
+				}
+				if (player.pp > 0 && day > 1) {
+					thoughts = " As you have seen, others keep their mind blank in battle. Type 'SEE' in combat to reveal information about your opponent. Doing so will grow your powers. "
+					player.pp = 2
+				}
+				if (player.pp > 1) {
+					player.gb = player.pp / 10
+					thoughts += "You have reached "+player.pp+"% of your potential."
+					thoughts += "you feel "+player.gb+" ghost bullets haunt above you."
+				}
+				if (player.pp > 4) {
+					thoughts += "You can now clense opponents of their ability. Type 'ERASE' in combat to remove your opponent's ability. Doing so will cost you energy. "
+				}
+				if (player.pp > 9) {
+					thoughts += "You can now freeze opponents and prevent them from moving. Type 'NAIL' in combat to stall your opponent's movements. Doing so will cost you energy. "
+				}
+				if (player.pp > 19) {
+					thoughts += "You can now summon powers of your idols. Type 'CALL' in combat to recieve a blessing. "
+				}
+				if (player.pp > 39) {
+					thoughts += "You can now move on to your next life with your current power. Type 'REINCARNATE' to return to the cycle. "
+				}
+				if (player.pp > 49) {
+					thoughts += "You can now release some of the flames inside you. Type 'FIRE' to burn those who oppose you. "
+				}
+				if (player.pp > 59) {
+					thoughts += "You can now show all the glory of the fire within you. Type 'SHINE' to blind all with your light."
+				}
+				if (player.pp > 79) {
+					thoughts += "You can now recover your max strength in battle. Type 'RESTORE' to heal completely."
+				}
+				if (player.pp > 89) {
+					thoughts += "You can now vaporize your opponents gun. Type 'MELT' to destroy your opponents ammunition."
+				} 
+				if (player.pp > 99) {
+					thoughts += "You can now 'ACCEND'."
+				}
+			}
+			if (input == "bye") {
+				output = player.name+" leaves the basement";
+				twnloc = "";
+				dialogue = "figures in the dark: '...'"
+				$("#picture").attr("src", "art/basement.png");
+			}
+		//Stage 1 - Hole//
+		}  else if (twnloc == "hole") {
+			//Stage 1 - Hole - Picture, Background, Music and Thoughts//
+			town_theme.stop();
+			hole_theme.play();
+			trickster_theme.stop();
+			output = "in front of "+player.name+" is a hole that is "+hole.depth+" yards deep. </br> "
+			if (hole.figures > 0) {output += "there are "+hole.figures+" short shadowy figures sitting in the hole.</br> "};
+			if (hole.workers > 0) {output += "there are "+hole.workers+" workers sitting in the hole waiting your command.</br> "};
+			if (player.sb > 0) {output += "to throw a special bullet in the hole, (type: 't').</br> "};
+			if (player.shovels > 0) {output += "to dig, (type: 'd'). "};
+			if (player.shovels > 0 && hole.figures > 0) {output += "to conscript a worker, (type: 'h').</br> "};
+			output += "To leave, (type: 'bye')."
+			$("#picture").attr("src", "art/hole_in.png");
+			$("#mindspace").attr("title", "... why do i feel compelled to come here?");
+			//Stage 1 - Hole - I/O//
+			if (hole.figures > 0 || hole.workers > 0) {
+				dialogue = "things in the hole: '...'"
+				$("#mindspace").attr("title", "... what are these things?");
+				$("#picture").attr("title", "feed please");
+			}
+			if (hole.bullets > 0 && day > hole.plantday) {
+				hole.figures = hole.figures + hole.bullets;
+				hole.bullets = 0;
+			}
+			if (input == "d" && player.shovels > 0 && player.energy > 0) {
+				n = 1 + hole.workers;
+				hole.depth = hole.depth + n;
+				player.cb += n
+				player.energy = player.energy - 1;
+				if ( n > 1) {
+					output = player.name+" and their crew dug "+n+" yards down.</br>"
+					output += "and found "+n+" cheap bullets."
+				} else {output = player.name+" dug 1 yard down."}
+				
+			}
+			if (input == "t" && player.sb > 0) {
+				player.sb = player.sb - 1;
+				hole.bullets = hole.bullets + 1;
+				hole.plantday = day;
+				output = player.name+" throws a special bullet into the hole."
+			}
+			if (input == "h" && hole.figures > 0 && player.shovels > 0) {
+				hole.figures = hole.figures - 1;
+				hole.workers = hole.workers + 1;
+				player.shovels = player.shovels - 1;
+				output = player.name+" hands a shadowy figure one of their shovels.";
+			}
+			if (hole.depth > 100 && hole.cavern == true) {
+				output = player.name+" falls into a cavern";
+				player.hp = player.hp - 10;
+				twnloc = 'cavern'
+			}
+			//Stage 1 - Hole - Boss fight setup//
+			if (hole.depth > 200 && hole.boss == true) {
+				output = player.name+" falls into the hall";
+				twnloc = 'hall';
+				//Stage 1 - Hole - Boss Choices Build Array//
+				if (boss.pp > 4) {
+					boss.choicelist.push("ERASE")
+				}
+				if (boss.pp > 9) {
+					boss.choicelist.push("NAIL")
+				}
+				if (boss.pp > 19) {
+					boss.choicelist.push("CALL")
+				}
+				if (boss.pp > 49) {
+					boss.choicelist.push("FIRE")
+				}
+				if (boss.pp > 59) {
+					boss.choicelist.push("SHINE")
+				}
+				if (boss.pp > 79) {
+					boss.choicelist.push("RESTORE")
+				}
+				if (boss.pp > 89) {
+					boss.choicelist.push("MELT")
+				}
+				if (boss.workers > 0) {
+					boss.choicelist.push("CHARGE")
+				}
+					round.cturn = 0;
+			}
+			if (input == "bye") {
+				output = player.name+" leaves the hole";
+				twnloc = "";
+				$("#picture").attr("src", "art/hole.png");
+			}
+		//Stage 1 - Cavern//
+		}  else if (twnloc == 'cavern') {
+			//Stage 1 - Cavern - Picture, Background, Music and Thoughts//
+			town_theme.stop();
+			hole_theme.stop();
+			trickster_theme.play();
+			$("#picture").attr("src", "art/trickster.gif");
+			n = "the trickster"
+			dialogue = n+": '...'"
+			$("#mindspace").attr("title", "... what are you");
+			$("#picture").attr("title", "pleasure to finally meet you, do you remember me? of course you don't, this is the first time we've met. right?");
+			if (cavern.heart == true ) {
+				output = n+" offers "+player.name+" a cursed trinket. "+player.name+" may only leave after taking it. </br>";
+				if (cavern.heart == true) {
+					output += "A giant's heart, (type: 'g' to eat).</br> "
+				}
+			}			
+			if (cavern.leave == true) {
+				output += n+" permits "+player.name+"'s exit (type: 'bye' to leave)."
+			}
+			//Stage 1 - Cavern - I/O//
+			if(input == 'g' && cavern.heart == true) {
+				output = player.name+" consumes the giant heart";
+				thoughts = "YOU HAVE EATEN THE HEART AND GAINED POWER, BUT HAVE LOST ANY MEANS OF HEALING AND ALL BENEFITS OF RESTING."
+				open.hospital = false;
+				player.hpup += 90;
+				player.hp += 100;
+				player.energy += 50;
+				player.energyup += 45;
+				player.items = ["ricochet","dust"];
+				idolmachine = [];
+				cavern.leave = true;
+				cavern.heart = false;
+			}
+			if(input == 'bye' && cavern.leave == true) {
+				output = player.name+" leaves the cavern which collapses behind them.";
+				twnloc = 'hole';
+				hole.depth = 120;
+				hole.cavern = false;
+				dialogue = n+": 'a furlong total below will reveal the one beneath it all. Keep digging.'"
+			}
+		//Stage 1 - Hall//
+		}  else if (twnloc == 'hall') {
+			//Stage 1 - Hall - Dialogue, Picture, Music, set up//
+			town_theme.stop();
+			hole_theme.stop();
+			boss_theme.play();
+			$("#picture").attr("src", "art/boss_0.png");
+			if (boss.quotetrack < boss.quotes.length) {
+				dialogue = boss.name+": '"+boss.quotes[boss.quotetrack]+"'"
+			} else {
+				dialogue = boss.name+": I HAVE NOTHING MORE TO SAY TO YOU WORM"
+			}
+			boss.quotetrack = boss.quotetrack + 1;
+			$("#mindspace").attr("title", "... get out of my head get out of my head get out of my head get out of my head");
+			$("#picture").attr("title", "AHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAH");
+			round.pmaxhp = 10 + player.hpup;
+			
+			//Stage 1 - Hall - Battle script//
+			if (player.hp > 0 && boss.hp > 0){
+
+				//Stage 1 - Player Idol / Dodge or Lunge Choice//
+			if (round.cturn % 4 == 1) {
+					boss.acc = 50;
+					if (boss.nail != true) {
+					output += player.name+" can dodge away from "+boss.name+" (type: 'd').</br>"}
+					if (hole.workers > 0 ) {
+						output += player.name+" has an army of "+hole.workers+" at their command, to attack "+boss.name+" (type: 'CHARGE').</br>"
+					}
+					if (player.items.length > 0) {
+						output += " in addition "+player.name+" has the ";
+						if (player.items.length == 1) {output += "ricochet idol (type: 'ricochet'). </br>"}
+						if (player.items.length == 2) {output += "ricochet (type: 'ricochet') and dust (type: 'dust') idols.</br> " }
+						if (player.items.length == 3) {output += "ricochet (type: 'ricochet'), dust (type: 'dust') and drain (type: 'drain') idols.</br> "}
+						output += player.name+" can use one to switch their ability before their next shot. If so type the name of the idol.</br>";
+					}
+					output += " or do nothing to stand their ground (press enter to continue)."
+					round.cturn = round.cturn + 1;
+			} else if (round.cturn % 4 == 2) {
+				//Stage 1 - Player Turn//
+				if (input != "") {
+					if (player.items.length > 0) {
+						if (input == player.items[0] || input == player.items[1] || input == player.items[2]) {
+							output = player.name+" changed their ability from "+player.ability+" to "+input+". </br>";
+							player.ability = input;
+						}
+					}
+					//Stage 3 - Player Spells//
+					if (input == "SEE" && player.pp > 1) {
+						player.pp = player.pp + 1;
+						player.hp = player.hp - 1;
+						thoughts = "THERE IS SOMETHING PROTECTING THEM FROM YOUR VISION"
+					}
+					if (input == "ERASE" && player.pp > 4 && player.energy > 0) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 1;
+						boss.ability = "???";
+						thoughts = "THEY FEEL, EMPTY INSIDE."
+					}
+					if (input == "NAIL" && player.pp > 9 && player.energy > 0) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 1;
+						thoughts = "THEY HAVE ALREADY BEEN LOCKED IN PLACE BY SOMETHING ELSE."
+					}
+					if (input == "CALL" && player.pp > 19 && player.energy > 0) {
+						player.energy = player.energy - 1;
+						player.pp = player.pp + 3;
+						if (player.ability == "???") {
+						thoughts = "THE EMPTINESS WITHIN YOU CLAWS AT THEM";
+						boss.hp = boss.hp * 2 / 3;
+						}
+						if (player.ability == "drain") {
+						thoughts = "THE FIRST VAMPIRE SMILES ON YOU, YOU HAVE SHARED EACHOTHERS PAIN.";
+						n = player.hp + boss.hp;
+						player.hp = n / 2;
+						boss.hp = n / 2;
+						n = 0;
+						}
+						if (player.ability == "dust") {
+						thoughts = "THE CLOUDS OF FATE PROVIDED YOU A GOLDEN OPPORTUNITY";
+						boss.accuracy = 0;
+						}
+						if (player.ability == "ricochet") {
+						thoughts = "THE BULLETS LOVE YOU";
+						n = player.clip;
+						player.clip.reverse();
+						player.clip.push('s');
+						player.clip.reverse();
+						}
+					}
+					if (input == "REINCARNATE" && player.pp > 39 && player.hp > 1) {
+						if(boss.status == false) {
+							stage = 6;
+							thoughts = "YOU RELEASE THIS MORTAL FORM TO LIVE ANOTHER";
+						} else {
+							thoughts = "THERE IS SOMETHING BELOW STOPPING YOUR ACCENT";
+						}
+					}
+					if (input == "FIRE" && player.pp > 49 && player.hp > 1) {
+						player.pp = player.pp + 1;
+						player.hp = player.hp - 1;
+						boss.hp = boss.hp - 10;
+						thoughts = "YOU BURN THEM WITH THE FIRE WITHIN YOU"
+						
+					}
+					if (input == "SHINE" && player.pp > 59 && player.hp > 1) {
+						player.pp = player.pp + 1;
+						player.hp = player.hp - 1;
+						boss.accuracy = boss.accuracy - 100;
+						thoughts = "YOU BLIND THEM WITH THE FIRE WITHIN YOU"
+						
+					}
+					if (input == "RESTORE" && player.pp > 79 && player.energy > 51) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 50;
+						player.hp = player.hp + 10;
+						thoughts = "YOU FAN THE FLAMES OF YOUR LIFE"
+						
+					}
+					if (input == "MELT" && player.pp > 89) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 20;
+						boss.workers = 0;
+						thoughts = "YOU VAPORIZE THEIR ARMY"
+					}
+					if (input == "ACCEND" && player.pp > 99) {
+						if(boss.status == false) {
+							stage = 8;
+							thoughts = "YOU RELEASE YOURSELF FROM THIS CYCLE OF TORMENT";
+						} else {
+							thoughts = "THERE IS SOMETHING INFRONT OF YOU STOPPING YOUR ACCENT";
+						}
+					}
+					if (boss.status == true) {
+							if (player.pp > 40) { 
+							player.pp = player.pp - 1;
+							thoughts += "SOMETHING INFRONT OF YOU SIPHONS YOUR IMPROVEMENT. ";
+						}
+					}
+					if (input == "CHARGE" && hole.workers > 0) {
+						output = player.name+" commands their army to attack "+boss.name+" for "+hole.workers+". </br>";
+						boss.hp = boss.hp - hole.workers;
+					}
+					if (player.pp > cycle.maxpp) {
+						thoughts = "THIS MIND AND BODY CANNOT HANDLE ANY MORE IMPROVEMENT. IT BUCKLES UNDER THE PRESSURE. WEAK WEAK WEAK.";
+						player.hp = player.hp - 10;
+						player.pp = cycle.maxpp;
+					}
+					//Stage 1 - Player Dodge//
+					if (input == "d" && boss.nail != true) {
+						output = player.name+" "+actverb[rng(actverb.length, 0)]+" away from "+boss.name+". </br>";
+						player.acc = player.acc - 25;
+						boss.acc = boss.acc - 25;
+					}	
+				}
+				if (player.clip.length > 0) {
+					damage = 0;
+					n = rng(100, 1);
+					//Stage 1 - Player Special Bullet//
+					if (player.clip[0] == "s") {
+						if (n < player.acc) {
+							damage = 5;
+							output += player.name+"'s special shot hits for "+damage+" damage. </br>";
+							if (player.ability == "drain") {
+								output += player.name+"'s special drain heals them for 4 damage. </br>";
+								player.hp = player.hp + 4;
+								if (player.hp >= round.pmaxhp) {player.hp = round.pmaxhp;}
+							}
+						} else if (player.ability == "ricochet"){
+							damage = 3;
+							output += player.name+"'s special shot misses but super ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += player.name+"'s special shot misses! </br>"
+						}
+						if (player.ability == "dust") {
+							boss.acc = boss.acc - 25;
+							output += player.name+"'s special shot caused a duststorm! lowering "+boss.name+"'s accuracy to: "+boss.acc+". </br> "
+						}
+					}
+					//Stage 1 - Player End Turn//
+					boss.hp = boss.hp - damage;
+					output += player.name+"'s shot has left "+boss.name+" with "+boss.hp+" health left. </br>";
+					player.clip.shift();
+					round.tclip = player.clip.length + boss.clip.length;
+					round.cturn = round.cturn + 1;
+				} else {
+					output += player.name+" has no gun and didn't fire! </br>";
+					round.cturn = round.cturn + 1;
+				}
+			//Stage 1 - Boss Behavior Algorithm//
+			} else if (round.cturn % 4 == 3) {
+				player.acc = 50;
+				output = boss.name+" plans their next move."
+				boss.choice = boss.choicelist[rng(boss.choicelist.length, 0)];
+				$("#picture").attr("src", "art/boss_1.png");
+				round.cturn = round.cturn + 1;
+				//Stage 1 - Boss Behavior//
+
+			} else if (round.cturn % 4 == 0) {
+			//Stage 1 - Boss Turn//
+				$("#picture").attr("src", "art/boss_2.png");
+					//Stage 1 - Boss Move//
+					if (boss.choice == "ERASE" && boss.pp > 4) {
+						player.ability = "???";
+						thoughts = "YOU FEEL, EMPTY INSIDE."
+					}
+					if (boss.choice == "NAIL" && boss.pp > 9) {
+						boss.nail = true;
+						thoughts = "YOU CANT MOVE."
+					}
+					if (boss.choice == "CALL" && boss.pp > 19) {
+						if (boss.ability == "???") {
+						thoughts = "THE EMPTINESS WITHIN THEM CLAWS AT YOU";
+						player.hp = player.hp * 2 / 3;
+						}
+						if (boss.ability == "drain") {
+						thoughts = "THE FIRST VAMPIRE SMILES ON THEM, THEY HAVE SHARED BOTH OF YOUR PAIN.";
+						n = player.hp + boss.hp;
+						player.hp = n / 2;
+						boss.hp = n / 2;
+						n = 0;
+						}
+						if (boss.ability == "dust") {
+						thoughts = "THE CLOUDS OF FATE PROVIDED THEM A GOLDEN OPPORTUNITY";
+						player.accuracy = 0;
+						}
+						if (boss.ability == "ricochet") {
+						thoughts = "THE BULLETS LOVE THEM";
+						n = boss.clip;
+						boss.clip.reverse();
+						boss.clip.push('s');
+						boss.clip.reverse();
+						}
+					}
+					if (boss.choice == "FIRE" && boss.pp > 49) {
+						player.hp = player.hp - 10;
+						thoughts = "THEY BURN YOU WITH THE FIRE WITHIN THEM"	
+					}
+					if (boss.choice == "SHINE" && boss.pp > 59) {
+						player.accuracy = player.accuracy - 100;
+						player.hp = player.hp - 5;
+						thoughts = "THEY BLIND YOU WITH THE FIRE WITHIN THEM"
+					}
+					if (boss.choice == "MELT" && boss.pp > 89) {
+						hole.workers = hole.workers / 2;
+						thoughts = "THEY VAPORIZE HALF OF YOUR ARMY"
+					}
+				if (boss.clip.length > 0) {
+					damage = 0
+					n = rng(100, 1)
+					//Stage 1 - Boss Special Bullet//
+					if (boss.clip[0] == "s") {
+						if (n < boss.acc) {
+							damage = 5;
+							output += boss.name+"'s special shot hits for "+damage+" damage. </br>";
+							if (boss.ability == "drain") {
+								output += boss.name+"'s special drain heals them for 4 damage.</br> ";
+								boss.hp = boss.hp + 4;
+								if (boss.hp >= round.emaxhp) {boss.hp = round.emaxhp;}
+							}
+						} else if (boss.ability == "ricochet"){
+							damage = 3;
+							output += boss.name+"'s special shot misses but super ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += boss.name+"'s special shot misses!</br> ";
+						}
+						if (boss.ability == "dust") {
+							player.acc = player.acc - 25;
+							output += boss.name+"'s special shot caused a duststorm! lowering "+player.name+"'s accuracy to: "+player.acc+".</br> ";
+						}
+					}
+					//Stage 3 - Enemy End Turn//
+					player.hp = player.hp - damage;
+					output += boss.name+"'s shot has left "+player.name+" with "+player.hp+" health left.</br> "
+					boss.clip.shift();
+					output += boss.name+" has "+boss.clip.length+" bullets left.</br> "
+					round.cturn = round.cturn + 1;
+				} else {
+					output += boss.name+" stares at YOU. </br>";
+					round.cturn = round.cturn + 1;
+				}
+				boss.choice = "";
+			}
+		//Stage 1 - Post-Boss-Battle//
+		} else {
+			//Stage 1 - Loss//
+			if (player.hp <= 0) {
+				stage = 4;
+			} 
+			//Stage 1 - Win//
+			if (boss.hp <= 0) {
+				player.clip = [];
+				player.acc = 50;
+				player.ability = "???"
+				output = player.name+" won!";
+				open.exchange = false;
+				boss.status = false;
+				open.hole = false;
+				output += " "+player.name+" has vanquished "+boss.name+" and returned to the surface.</br> The hole fills as you leave, Taking the exchange with it.";
+				round.cturn = 0;
+				twnloc = "";
+			}
+		}
+			//Stage 1 - Hall - End Battle script//
+		}
+	//Stage 2 - Pre Battle//
+	} else if (stage == 2) {
+		$("#BG").attr("href", "art/BG2.css");
+		inn_theme.stop()
+		arena_theme.play()
+		$("#picture").attr("title", "...");
+		$("#mindscape").attr("title", "...");
+		twnloc = "arena";
+		$("#picture").attr("src", "art/gambler.gif");
+		player.tb = player.cb + player.rb + player.sb + player.gb
+		//Stage 2 - Enemy Generation//
+		if (enemy.behavior == "") {
+			enemy.name = names[rng(names.length, 0)];
+			//Stage 2 - Randomly Generated Enemies//
+			enemy.hp = 5 + day;
+			round.emaxhp = enemy.hp;
+			enemy.ability = ability[rng(4,0)];
+			enemy.behavior = behavior[rng(behavior.length, 0)];
+			n = rng(5,2) + day;
+			while (enemy.clip.length < n) {
+				enemy.clip.push(ebc[rng(7,0)]);
+			}
+			//Stage 2 - Preset Enemies//
+			//Stage 2 - THE TRUE BOSS Preset//
+			if (enemy.name == "THE BOSS") {
+				enemy.behavior = "smart";
+				enemy.hp = 10 + day;
+				round.emaxhp = enemy.hp;
+				enemy.ability = "ricochet";
+				enemy.clip = ["s","s","s","s","s"];
+			}
+			//Stage 2 - timmy & tommy Preset//
+			if (enemy.name == "timmy & tommy") {
+				enemy.hp = 10 + day;
+				round.emaxhp = enemy.hp;
+				enemy.ability = "dust";
+				enemy.behavior = "stiff";
+				enemy.clip = ["c","c","c","c","c","c","c","c","c","c","c","c","c"];
+			}
+			//Stage 2 - scrump Preset//
+			if (enemy.name == "scrump") {
+				enemy.hp = 10 + day;
+				round.emaxhp = enemy.hp;
+				enemy.behavior = "flighty";
+				enemy.ability = "ricochet";
+				enemy.clip = ["s","c","r"];
+			}
+			//Stage 2 - dracula Preset//
+			if (enemy.name == "dracula") {
+				enemy.hp = 10 + day;
+				round.emaxhp = enemy.hp;
+				enemy.behavior = "fighty";
+				enemy.ability = "drain";
+				enemy.clip = ["c","c","c","c","c","c","c","c"];
+			}
+			round.pmaxhp = 10 + player.hpup;
+			output = player.name+" turns in their key to the inn keeper and leaves first thing in the moring and heads to the arena.</br> "+player.name+" signs in to the applicants list and sits down to wait for the battle to start. </br>"+player.name+" is then met by a member of the gambling ring, who hands "+player.name+" a gun."
+			dialogue = "gambler: 'looks like you will be facing "+enemy.name+", a "+enemy.behavior+" duelest who has the "+enemy.ability+" ability.'"
+		//Stage 2 - Fill Player Clip Sequence//
+		} else if (player.tb > 0) {
+			$("#picture").attr("src", "art/load.png");
+			output  = player.name+" is fills their gun from their cache of bullets. (Press enter to continue).";
+			while (player.clip.length < player.tb) {
+				input = pbc[rng(pbc.length,0)];
+				if (input == "c" && player.cb > 0) {
+					player.clip.push(input);
+					player.cb = player.cb - 1;
+				} else if (input == "r" && player.rb > 0) {
+					player.clip.push(input);
+					player.rb = player.rb - 1;
+				} else if (input == "s" && player.sb > 0) {
+					player.clip.push(input);
+					player.sb = player.sb - 1;
+				} else if (input == "g" && player.gb > 0) {
+					player.gb = player.gb - 1;
+					player.clip.push(ebc[rng(7,0)]);
+					player.gb = player.gb;
+				}
+			}
+		} else {
+			stage = 3;
+			$("#picture").attr("src", "art/load.gif");
+			output = player.name+"'s name is called by the arena coordinator and they walk out into the center field of the arena to face "+enemy.name+". "
+		}
+		
+	//Stage 3 - Battle//
+	} else if (stage == 3) {
+		//Stage 3 - Battle - Picture, Background, Music and Thoughts//
+		$("#picture").attr("src", "art/arena_basic.png");
+		if (enemy.name == "big boy") {
+			$("#picture").attr("src", "art/arena_bboy.png");
+		}
+		if (enemy.name == "THE BOSS") {
+			$("#picture").attr("src", "art/arena_boss.png");
+		}
+		if (enemy.name == "bubba") {
+			$("#picture").attr("src", "art/arena_bubba.png");
+		}
+		if (enemy.name == "dracula") {
+			$("#picture").attr("src", "art/arena_dracula.png");
+		}
+		if (enemy.name == "lilbboy") {
+			$("#picture").attr("src", "art/arena_lilbboy.png");
+		}
+		if (enemy.name == "a pack of coordinated rats") {
+			$("#picture").attr("src", "art/arena_rats.png");
+		}
+		if (enemy.name == "santa") {
+			$("#picture").attr("src", "art/arena_santa.png");
+		}
+		if (enemy.name == "snake") {
+			$("#picture").attr("src", "art/arena_snake.png");
+		}
+		if (enemy.name == "timmy & tommy") {
+			$("#picture").attr("src", "art/arena_tandt.png");
+		}
+		if (enemy.name == "yuji") {
+			$("#picture").attr("src", "art/arena_yuji.png");
+		}
+		round.tclip = player.clip.length + enemy.clip.length;
+		//Stage 3 - Mid-Battle//
+		if (player.hp > 0 && enemy.hp > 0){
+			round.cturn = round.cturn + 1;
+			round.tclip = player.clip.length + enemy.clip.length;
+			//Stage 3 - Player Idol / Dodge or Lunge Choice//
+			if (round.cturn % 4 == 1) {
+				enemy.acc = 50;
+				output = player.name+" can lunge at "+enemy.name+" (type: 'l'). </br> or dodge away from "+enemy.name+" (type: 'd').</br>"
+				if (player.items.length > 0) {
+					output += " in addition "+player.name+" has the ";
+					if (player.items.length == 1) {output += "ricochet idol (type: 'ricochet'). </br>"}
+					if (player.items.length == 2) {output += "ricochet (type: 'ricochet') and dust (type: 'dust') idols. </br>" }
+					if (player.items.length == 3) {output += "ricochet (type: 'ricochet'), dust (type: 'dust') and drain (type: 'drain') idols. </br>"}
+					output += player.name+" can use one to switch their ability before their next shot. If so type the name of the idol.</br>";
+				}
+				output += " or do nothing to stand their ground (press enter to continue)."
+				dialogue = "announcer:'"+player.name+" plans their next move!'";
+			} else if (round.cturn % 4 == 2) {
+			//Stage 3 - Player Turn//
+				if (input != "") {
+					if (player.items.length > 0) {
+						if (input == player.items[0] || input == player.items[1] || input == player.items[2]) {
+							output = player.name+" changed their ability from "+player.ability+" to "+input+". </br>";
+							player.ability = input;
+						}
+					}
+					//Stage 3 - Player Spells//
+					if (input == "SEE" && player.pp > 1) {
+						player.pp = player.pp + 1;
+						if (enemy.behavior == "stiff") {
+							thoughts = "THEY'RE NOT MOVING ONE INCH. ";
+						} else if (enemy.behavior == "smart") {
+							thoughts = "THEY'LL USE THE BEST STRATEGY POSSIBLE TO ENSURE VICTORY. ";
+						} else if (enemy.behavior == "fighty") {
+							thoughts = "THEY'LL LUNGE AT ANYONE NO MATTER WHAT. ";
+						} else if (enemy.behavior == "flighty") {
+							thoughts = "THEY'RE RUNNING AWAY FROM EVERYONE. ";
+						}
+						if (player.pp > 5) {
+							thoughts += "THEIR CLIP IS "+enemy.clip+". "
+						}
+						if (player.pp > 10) {
+							thoughts += "THEY FEAR YOU. "
+						}
+						if (player.pp > 20) {
+							thoughts += "THEY ARE JUST JEALOUS OF YOUR POWER. "
+						}
+						if (player.pp > 30) {
+							thoughts += "THEY SEEM FRAIL COMPARED TO YOU. "
+						}
+						if (player.pp > 40) {
+							thoughts += "WORMS. WORMS. WORMS. WORMS. "
+						}
+						if (player.pp > 50) {
+							thoughts += "DON'T YOU WISH TO ACCEND. "
+						}
+						if (player.pp > 60) {
+							thoughts += "JOIN US "+player.name+". "
+						}
+						if (player.pp > 70) {
+							thoughts += "KEEP GROWING. "
+						}
+						if (player.pp > 80) {
+							thoughts += "AREN'T YOU TIRED OF THIS RAT RACE. "
+						}
+						if (player.pp > 90) {
+							thoughts += "CAST ASIDE YOUR FORM AND JOIN US. "
+						}
+						if (player.pp > 99) {
+							thoughts += "'ACCEND'. "
+						}
+					}
+					if (input == "ERASE" && player.pp > 4 && player.energy > 0) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 1;
+						enemy.ability = "???";
+						thoughts = "THEY FEEL, EMPTY INSIDE."
+					}
+					if (input == "NAIL" && player.pp > 9 && player.energy > 0) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 1;
+						enemy.behavior = "stiff";
+						thoughts = "THEY CANT MOVE."
+					}
+					if (input == "CALL" && player.pp > 19 && player.energy > 0) {
+						player.energy = player.energy - 1;
+						player.pp = player.pp + 1;
+						if (player.ability == "???") {
+						thoughts = "THE EMPTINESS WITHIN YOU CLAWS AT THEM";
+						enemy.hp = enemy.hp * 2 / 3;
+						}
+						if (player.ability == "drain") {
+						thoughts = "THE FIRST VAMPIRE SMILES ON YOU, YOU HAVE SHARED EACHOTHERS PAIN.";
+						n = player.hp + enemy.hp;
+						player.hp = n / 2;
+						enemy.hp = n / 2;
+						n = 0;
+						}
+						if (player.ability == "dust") {
+						thoughts = "THE CLOUDS OF FATE PROVIDED YOU A GOLDEN OPPORTUNITY";
+						enemy.accuracy = 0;
+						}
+						if (player.ability == "ricochet") {
+						thoughts = "THE BULLETS LOVE YOU";
+						n = player.clip;
+						player.clip.reverse();
+						player.clip.push('s');
+						player.clip.reverse();
+						
+						}
+					}
+					if (input == "REINCARNATE" && player.pp > 39 && player.hp > 1) {
+						if(boss.status == false) {
+							stage = 6;
+							thoughts = "YOU RELEASE THIS MORTAL FORM TO LIVE ANOTHER";
+						} else {
+							thoughts = "THERE IS SOMETHING BELOW STOPPING YOU RESTARTING THE CYCLE.";
+						}
+					}
+					if (input == "FIRE" && player.pp > 49 && player.hp > 1) {
+						player.pp = player.pp + 1;
+						player.hp = player.hp - 1;
+						enemy.hp = enemy.hp - 10;
+						thoughts = "YOU BURN THEM WITH THE FIRE WITHIN YOU"
+						
+					}
+					if (input == "SHINE" && player.pp > 59 && player.hp > 1) {
+						player.pp = player.pp + 1;
+						player.hp = player.hp - 1;
+						enemy.accuracy = enemy.accuracy - 100;
+						thoughts = "YOU BLIND THEM WITH THE FIRE WITHIN YOU"
+						
+					}
+					if (input == "RESTORE" && player.pp > 79 && player.energy > 51) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 50;
+						player.hp = player.hp + 10;
+						thoughts = "YOU FAN THE FLAMES OF YOUR LIFE"
+						
+					}
+					if (input == "MELT" && player.pp > 89) {
+						player.pp = player.pp + 1;
+						player.energy = player.energy - 20;
+						enemy.clip = [];
+						thoughts = "YOU EMPTY THEIR CLIP"
+					}
+					if (input == "ACCEND" && player.pp > 99) {
+						if(boss.status == false) {
+							stage = 8;
+							thoughts = "YOU RELEASE THIS MORTAL FORM TO LIVE ANOTHER";
+						} else {
+							thoughts = "THERE IS SOMETHING BELOW STOPPING YOUR ACCENT";
+						}
+						
+					}
+					if (player.pp > cycle.maxpp) {
+						thoughts = "YOUR BODY CANNOT HANDLE ANY MORE IMPROVEMENT. IT BUCKLES UNDER THE PRESSURE.";
+						player.hp = player.hp - 10;
+						player.pp = cycle.maxpp;
+					}
+					if (boss.status == true) {
+							if (player.pp > 40) { 
+							player.pp = player.pp - 1;
+							boss.pp = boss.pp + 1;
+							thoughts += "SOMETHING ELSE BELOW SIPHONS YOUR IMPROVEMENT. ";
+						}
+					}
+					//Stage 3 - Player Dodge//
+					if (input == "d") {
+						output = player.name+" "+actverb[rng(actverb.length, 0)]+" away from "+enemy.name+". </br>";
+						player.acc = player.acc - 25;
+						enemy.acc = enemy.acc - 25;
+					}
+					//Stage 3 - Player Lunge//
+					if (input == "l") {
+						output = player.name+" "+actverb[rng(actverb.length, 0)]+" toward "+enemy.name+". </br>";
+						player.acc = player.acc + 25;
+						enemy.acc = enemy.acc + 25;
+						if (enemy.clip.length == 0) {
+							enemy.hp = 0;
+							output += player.name+" knocked out "+enemy.name+". </br>";
+						}
+					}
+				}
+				if (player.clip.length > 0) {
+					damage = 0;
+					n = rng(100, 1);
+					//Stage 3 - Player Cheap Bullet//
+					if (player.clip[0] == "c") {
+						if (n < player.acc) {
+							damage = 3;
+							output += player.name+"'s cheap shot hits for "+damage+" damage.</br> ";
+							if (player.ability == "drain") {
+								output += player.name+"'s drain heals them for 2 damage.</br> ";
+								player.hp = player.hp + 2;
+								if (player.hp >= round.pmaxhp) {player.hp = round.pmaxhp;}
+							}
+						} else if (player.ability == "ricochet"){
+							damage = 1;
+							output += player.name+"'s cheap shot misses but ricochets and hits for "+damage+" damage.</br> ";
+						} else {
+							output += player.name+"'s cheap shot misses.</br> ";
+						}
+						if (player.ability == "dust") {
+							enemy.acc = enemy.acc - 5;
+							output += player.name+"'s cheap shot caused dust.</br> lowering "+enemy.name+"'s accuracy to: "+enemy.acc+". </br>";
+						}
+					//Stage 3 - Player Regular Bullet//
+					} else if (player.clip[0] == "r") {
+						if (n < player.acc) {
+							damage = 4;
+							output += player.name+"'s regular shot hits! for "+damage+" damage </br>";
+							if (player.ability == "drain") {
+								output += player.name+"'s drain heals them for 3 damage</br> ";
+								player.hp = player.hp + 3;
+								if (player.hp >= round.pmaxhp) {player.hp = round.pmaxhp;}
+							}
+						} else if (player.ability == "ricochet"){
+							damage = 2;
+							output += player.name+"'s regular shot misses but ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += player.name+"'s regular shot misses! </br>";
+						}
+						if (player.ability == "dust") {
+							enemy.acc = enemy.acc - 15;
+							output += player.name+"'s regular shot caused dust! </br> lowering "+enemy.name+"'s accuracy to: "+enemy.acc+". </br>";
+						}
+					//Stage 3 - Player Special Bullet//
+					} else if (player.clip[0] == "s") {
+						if (n < player.acc) {
+							damage = 5;
+							output += player.name+"'s special shot hits for "+damage+" damage. </br>";
+							if (player.ability == "drain") {
+								output += player.name+"'s special drain heals them for 4 damage. </br>";
+								player.hp = player.hp + 4;
+								if (player.hp >= round.pmaxhp) {player.hp = round.pmaxhp;}
+							}
+						} else if (player.ability == "ricochet"){
+							damage = 3;
+							output += player.name+"'s special shot misses but super ricochets and hits for "+damage+" damage.</br> ";
+						} else {
+							output += player.name+"'s special shot misses! </br>"
+						}
+						if (player.ability == "dust") {
+							enemy.acc = enemy.acc - 25;
+							output += player.name+"'s special shot caused a duststorm! </br> lowering "+enemy.name+"'s accuracy to: "+enemy.acc+".</br> "
+						}
+					}
+					//Stage 3 - Player End Turn//
+					enemy.hp = enemy.hp - damage;
+					output += player.name+"'s shot has left "+enemy.name+" with "+enemy.hp+" health left. </br>";
+					player.clip.shift();
+					round.tclip = player.clip.length + enemy.clip.length;
+				} else {
+					output += player.name+" is out of bullets and cannot fire! ";
+					round.tclip = player.clip.length + enemy.clip.length;
+				}
+			//Stage 3 - Enemy Behavior Algorithm//
+			} else if (round.cturn % 4 == 3) {
+				player.acc = 50;
+				output = enemy.name+" plans their next move."
+				enemy.choice = "";
+				//Stage 3 - Stiff Behavior//
+				if (enemy.behavior == "stiff") {
+					enemy.choice = "nothing";
+				}
+				//Stage 3 - Fighty Behavior//
+				if (enemy.behavior == "fighty") {
+					enemy.choice = "lunge";
+				}
+				//Stage 3 - Flighty Behavior//
+				if (enemy.behavior == "flighty") {
+					enemy.choice = "dodge";
+				}
+				//Stage 3 - Smart Behavior//
+				if (enemy.behavior == "smart") {
+					if (enemy.ability == "drain") {
+						enemy.choice = "lunge";
+					}
+					if (enemy.ability == "dust") {
+						enemy.choice = "nothing";
+					}
+					if (enemy.ability == "ricochet") {
+						enemy.choice = "dodge";
+					}
+					if (enemy.ability == "???") {
+						enemy.choice = "nothing"
+					}
+
+				}
+			} else if (round.cturn % 4 == 0) {
+			//Stage 3 - Enemy Turn//
+				if (enemy.choice != "") {
+					//Stage 3 - Enemy Dodge//
+					if (enemy.choice == "dodge") {
+						output = enemy.name+" "+actverb[rng(actverb.length, 0)]+" away from "+player.name+". </br>";
+						player.acc = player.acc - 25;
+						enemy.acc = player.acc - 25;
+					}
+					//Stage 3 - Enemy Lunge//
+					if (enemy.choice == "lunge") {
+						output = enemy.name+" "+actverb[rng(actverb.length, 0)]+" toward "+player.name+".</br> ";
+						player.acc = player.acc + 25;
+						enemy.acc = enemy.acc + 25;
+						if (player.clip.length == 0) {
+							player.hp = 0;
+							output += enemy.name+" knocked out "+player.name+" with their lunge. </br>";
+						}
+					}
+				}
+				if (enemy.clip.length > 0) {
+					damage = 0
+					n = rng(100, 1)
+					//Stage 3 - Enemy Cheap Bullet//
+					if (enemy.clip[0] == "c") {
+						if (n < enemy.acc) {
+							damage = 3;
+							output += enemy.name+"'s cheap shot hits for "+damage+" damage. </br>";
+							if (enemy.ability == "drain") {
+								output += enemy.name+"'s drain heals them for 2 damage. </br>";
+								enemy.hp = enemy.hp + 2;
+								if (enemy.hp >= round.emaxhp) {enemy.hp = round.emaxhp;}
+							}
+						} else if (enemy.ability == "ricochet"){
+							damage = 1;
+							output += enemy.name+"'s cheap shot misses but ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += enemy.name+"'s cheap shot misses! </br>"
+						}
+						if (enemy.ability == "dust") {
+							player.acc = player.acc - 5;
+							output += enemy.name+"'s cheap shot caused dust! </br> lowering "+player.name+"'s accuracy to: "+player.acc+".</br> "
+						}
+					//Stage 3 - Enemy Regular Bullet//
+					} else if (enemy.clip[0] == "r") {
+						if (n < enemy.acc) {
+							damage = 4;
+							output += enemy.name+"'s regular shot hits for "+damage+" damage. </br>";
+							if (enemy.ability == "drain") {
+								output += enemy.name+"'s drain heals them for 3 damage. </br>";
+								enemy.hp = enemy.hp + 3;
+								if (enemy.hp >= round.emaxhp) {enemy.hp = round.emaxhp;}
+							}
+						} else if (enemy.ability == "ricochet"){
+							damage = 2;
+							output += enemy.name+"'s regular shot misses but ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += enemy.name+"'s regular shot misses! </br>"
+						}
+						if (enemy.ability == "dust") {
+							player.acc = player.acc - 15;
+							output += enemy.name+"'s regular shot caused dust! </br> lowering "+player.name+"'s accuracy to: "+player.acc+". </br>"
+						}
+					//Stage 3 - Enemy Special Bullet//
+					} else if (enemy.clip[0] == "s") {
+						if (n < enemy.acc) {
+							damage = 5;
+							output += enemy.name+"'s special shot hits for "+damage+" damage. </br>";
+							if (enemy.ability == "drain") {
+								output += enemy.name+"'s special drain heals them for 4 damage. </br>";
+								enemy.hp = enemy.hp + 4;
+								if (enemy.hp >= round.emaxhp) {enemy.hp = round.emaxhp;}
+							}
+						} else if (enemy.ability == "ricochet"){
+							damage = 3;
+							output += enemy.name+"'s special shot misses but super ricochets and hits for "+damage+" damage. </br>";
+						} else {
+							output += enemy.name+"'s special shot misses! </br>";
+						}
+						if (enemy.ability == "dust") {
+							player.acc = player.acc - 25;
+							output += enemy.name+"'s special shot caused a duststorm! </br> lowering "+player.name+"'s accuracy to: "+player.acc+". </br>";
+						}
+					}
+					//Stage 3 - Enemy End Turn//
+					player.hp = player.hp - damage;
+					output += enemy.name+"'s shot has left "+player.name+" with "+player.hp+" health left. </br>"
+					enemy.clip.shift();
+					output += enemy.name+" has "+enemy.clip.length+" bullets left. </br>"
+					round.tclip = player.clip.length + enemy.clip.length;
+				} else {
+					output += enemy.name+" is out of bullets and cannot fire! </br>";
+					round.tclip = player.clip.length + enemy.clip.length;
+				}
+				enemy.choice = "";
+			}
+		//Stage 3 - Post-Battle//
+		} else {
+			//Stage 3 - Loss//
+			if (player.hp <= 0) {
+				stage = 4;
+				output = "In your last fragments of consciousness you feel a malevolent smile burn into your soul."
+			} 
+			//Stage 3 - Win//
+			if (enemy.hp <= 0) {
+				player.clip = [];
+				player.acc = 50;
+				output = player.name+" won!";
+				enemy.name = "";
+				enemy.behavior = "";
+				enemy.acc = 50;
+				enemy.hp = 0;
+				enemy.ability = "";
+				$("#picture").attr("src", "art/gambler.gif");
+				n = 6 + day;
+				output += " on "+player.name+"'s way back into town they are approached their sponsor from the gambling ring. </br>"+player.name+" is given "+n+" regular bullets for winning. </br> And takes "+player.name+"'s gun away.";
+				player.rb = player.rb + n;
+				stage = 1;
+				round.cturn = 0;
+				twnloc = "";
+			}
+		}
+
+	//Stage 4 - Bad Ending//	
+	} else if (stage == 4) {
+		$("#picture").attr("src", "art/game0ver.gif");
+		arena_theme.stop();
+		boss_theme.stop();
+		end_theme.play();
+		output = player.name+" dies in battle. </br> refresh the page to restart.";
+		twnloc = "Bad Ending";
+	//Stage 5 - Good Ending//
+	} else if (stage == 5) {
+		$("#picture").attr("src", "art/retire.gif");
+		town_theme.stop();
+		end_theme.play();
+		twnloc = "Good Ending";
+		n = 0;
+		n = n + player.cb * 3.33;
+		n = n + player.rb * 5;
+		n = n + player.sb * 15;
+		n = n + player.items.length * 15;
+		n = n + player.hpup * 7.5;
+		n = n * day;
+		if(open.exchange == false) {n = n - 200;}
+		if(open.hospital == false) {n = n - 200;}
+		if(open.diner == false) {n = n - 200;}
+		output = player.name+" retires and leaves town after trading in everything they own for ";
+		if( n < 0 ) {
+			n = n * -1;
+			output += "a "+n+" dollar bounty </br>";
+		} else {output += "$"+n+" </br>"}
+		if (open.exchange == false || open.hospital == false || open.diner == false) {output += "and a criminal record";} 
+	//Stage 6 - Reincarnation//
+	} else if (stage == 6) {
+		$("#BG").attr("href", "art/BG1.css");
+		$("#picture").attr("src", "art/title.png");
+		arena_theme.stop();
+		boss_theme.stop();
+		cycle_theme.play();
+		twnloc = "Cycle"
+		shifts = 0;
+		dinert = 0;
+		damage = 0;
+		cycle.count = cycle.count + 1;
+		cycle.maxpp = cycle.maxpp + 10;
+		output = "YOU have entered the cycle and come out at the begining.</br> YOU feel as though YOUR power has been maintained and your potential increased."
+		cavern = {dialog:[], heart:true, leave:false}
+		idolmachine = ["ricochet","drain","dust"];
+		day = 2;
+		n = 0;
+		stage = 0; 
+		round = {tclip:0, cturn:0, pmaxhp:0, emaxhp:0}; 
+		boss = {status:true, name: player.name, hp: player.hp, ability: player.ability, behavior:"", choice:"", choicelist: [], clip:[],pp: player.pp, workers: hole.workers, quptetrack:0,quotes:["WHY DID YOU LEAVE ME", "WHEN WE WERE TOGETHER I FELT IN CONTROL OF MYSELF", "BUT WHEN YOU LEFT THEY LOCKED ME AWAY JUST LIKE THEM","I BECAME JUST LIKE THEM","I KNEW YOU'D ARRIVE EVENTUALLY","HOW MANY TIMES HAVE YOU DONE THIS NOW","WHY COULDNT YOU HAVE WAITED AND LET ME END IT ALL"]}
+		player = {name:"", hp:10, hpup:0, acc:50, ability:"???", clip:[], tb:0, cb:0, rb:0, sb:0, items:[], energy:5, energyup:0, shovels:0 , pp: player.pp + 1};
+		enemy = {name:"", hp:10, acc:50, ability:"???", clip:[], tb:0, cb:0, rb:0, sb:0, behavior:"", choice:""};
+		hole = {depth: 1, figures: 0, workers: 0, bullets: 0, plantday:0, cavern:true, boss:true};
+		open = {exchange: true, hospital: true, diner: true, basement: false, library: false, hole:false, job: false};
+		twnloc = "";
+	//Stage 7 - World End Ending//	
+	} else if (stage == 7) {
+		twnloc = "Worse Ending";
+		$("#picture").attr("src", "art/w0rldend.gif");
+		arena_theme.stop();
+		boss_theme.stop();
+		inn_theme.stop();
+		end_theme.play();
+		output = boss.name+" erupts from the earth and destroys all things. </br> YOU were too late. </br> refresh the page to restart."		
+	//Stage 8 - ACCEND Ending//
+	} else if (stage == 8) {
+		$("#picture").attr("src", "art/accend.gif");
+		arena_theme.stop();
+		boss_theme.stop();
+		end_theme.play();
+		twnloc = "Best Ending";
+		output = "YOU release yourself from the cycle of life and death and accend to the higher planes of existance.</br> To return to the cycle, refresh the page."
+	}
+
+	//Reactive CSS Backgrounds//
+	//Max Variables/
+	displaymaxplayerhp = 10 + player.hpup;
+	displaymaxplayerenergy = 5 + player.energyup;
+	//HP Meter//
+	if (player.hp >= 5) {
+		$("#txtoutHP").css("background-color","#99ffcc");
+	} else {
+		$("#txtoutHP").css("background-color","#ff9999");
+	}
+	//Energy Meter//
+	if (player.energy >= 3) {
+		$("#txtoutENERGY").css("background-color","#99ffcc");
+	} else {
+		$("#txtoutENERGY").css("background-color","#ff9999");
+	}
+	//Accuracy Indicator//
+	if (player.acc >= 50) {
+		$("#txtoutACCURACY").css("background-color","#66ccff");
+	} else if (player.acc < 50) {
+		$("#txtoutACCURACY").css("background-color","#ffff99");
+	}
+	//Variable clean up and out put//	
+	$("#txtoutHP").text("Health: "+player.hp+"/"+displaymaxplayerhp);
+	$("#txtoutACCURACY").text("Accuracy: "+player.acc+"%");
+	$("#txtoutDAY").text("Day: "+day);
+	$("#txtoutENERGY").text("Energy: "+player.energy+"/"+displaymaxplayerenergy);
+	$("#txtoutCLIP").text("Clip: ["+player.clip+"]")
+	//$("#txtoutBULLETS").text("Cheap Bullets:"+player.cb+", Regular Bullets:"+player.rb+", Special Bullets:"+player.sb+", Ghost Bullets: "+player.gb+"");//
+	document.getElementById("txtoutBULLETS").innerHTML = "Cheap Bullets:"+player.cb+" </br> Regular Bullets:"+player.rb+" </br> Special Bullets:"+player.sb+" </br> Ghost Bullets: "+player.gb+""
+	//$("#txtoutITEMS").text("Idols: ["+player.items+"] Shovels: "+player.shovels);//
+	document.getElementById("txtoutITEMS").innerHTML = "Idols: ["+player.items+"] </br> Shovels: "+player.shovels;
+	$("#txtoutABILITY").text("Ability: "+player.ability);
+	//$("#txtout1").text(output);//
+	document.getElementById("txtout1").innerHTML = output;
+	$("#txtout2").text(dialogue);
+	var history = document.getElementById("mindspace").innerHTML
+	document.getElementById("mindspace").innerHTML = "     "+ thoughts +"     " + history
+	//$("#mindspace").val(thoughts);//
+	$("#txtin").val("");
+	if (twnloc != ""){
+		$("#location").text("Location: the "+twnloc);
+	} else {$("#location").text("Location: ");}
+	$("#values2").text("enemy acc:"+enemy.acc+", enemy health:"+enemy.hp+", enemy clip:"+enemy.clip+", enemy ability:"+enemy.ability);
+	output = "";
+	dialogue = "";
+	thoughts = "";
+}
+</script>
+<style>
+body {
+	display: flex;
+	flex-wrap: nowrap;
+	opacity: 0.98
+}
+p, div, img, input, textarea {
+	background-color: white;
+	border: solid;
+	height: 100%;
+	width: 100%;
+	padding: 3%;
+	margin: 0%;
+}
+#location, #values0, #io {
+	font-size: 150%;
+}
+#txtoutDAY, #txtoutHP, #txtoutENERGY, #txtoutBULLETS, #txtoutACCURACY, #txtoutCLIP, #txtoutITEMS, #txtoutBULLETS, #txtoutABILITY {
+	font-size: 90%;
+	border: none;
+	word-wrap: normal;}
+}
+#txtoutHP {background-color: #99ffcc;}  
+#txtoutENERGY {background-color: #99ffcc;}
+#txtoutACCURACY {background-color: #66ccff;}
+#txtoutABILITY {background-color: #f2f2f2;}
+#txtoutDAY {background-color: #f2f2f2;}
+#txtoutCLIP {background-color: #cc99ff;}
+#txtoutITEMS {background-color: #cc99ff;}
+#txtoutBULLETS {background-color: #cc99ff;}
+#txtout1, #txtout2, {
+
+}
+#console, #txt, #ds {
+	flex-directon: column;
+	position: center;
+
+}
+#mindspace {
+	height: 400%
+}
+footer{
+   position: fixed;
+   bottom: 0;
+   left: 0;
+   clear: both;
+   float: left;
+   border: 2px solid black;
+}
+</style>
+<div id="console">
+	<p id="location">Welcome to stand0ff</p>
+	<img id="picture" src="art/title.png" title="..."><br/>
+	<p id="txtout2"></p>
+</div>
+<div id="txt">
+
+	<p id="txtoutDAY">Day: 0</p>
+	<p id="txtoutENERGY">Energy: 5/5</p>
+	<p id="txtoutHP">Health: 10/10</p>
+	<p id="txtoutACCURACY">Accuracy: 50%</p>
+	<p id="txtout1">Welcome to stand0ff. Press Enter to start.</p>
+	<input type="text" id="txtin" placeholder="Type Here"></input>
+	<p id="txtoutCLIP">Clip: []</p>
+	<p id="txtoutBULLETS">Cheap Bullets: 0 </br>
+	Regular Bullets: 0 </br>
+	Special Bullets: 0 </br>
+	Ghost Bullets: 0</p>
+	<p id="txtoutITEMS">Idols: [] </br>
+	Shovels: 0</p>
+	<p id="txtoutABILITY">Ability: ???</p>
+	<p id="options"></p>
+</div>
+<div id="ds">
+	<p id="dst"> ? ? ? </p>
+	<textarea id="mindspace" placeholder=" ? ? ? " rows="20" title="... it's making my head hurt?" readonly>what is this thing?</textarea>
+</div>
+<footer>
+    <aside><abbr id="hint" title="READ THE MINDS OF OTHERS BY USING THE MOUSE">hover over me with the mouse for a hint</abbr></aside>
+</footer>
+</body>
+</html>

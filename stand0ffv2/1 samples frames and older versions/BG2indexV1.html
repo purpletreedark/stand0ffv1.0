@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en"> 
+   <head>
+      <meta charset="utf-8">
+      <!--- Name: John (Jack) Clouthier
+        Bullet Game 2
+        Date Created: October 27th 2020
+        Filename: index.html--> 
+      <title>&#x1f449;Bullet Game 2: Javascript Edition&#x1f449;</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="keywords" content="John, Clouthier, Bullet, Game 2, Index">
+      <meta name="author" content="John (Jack) Clouthier">
+      <meta name="description" content="John Clouthier's Bullet Game 2">
+	  <script src="jquery-3.5.1.min.js"></script>
+   </head>
+   <body>
+    <img src="St0_S0.png">
+	<input type="text"><input type="submit">
+   <script>
+   function rng(x, y) { return Math.floor(Math.random() * x + y); }
+   var ebc = ["c","r","s"]
+   var names = ["bubba", "bigboy", "lilbboy","THE BOSS"];
+   var idolmachine = ["virus", "ricochet", "drain", "dust"];
+   var ability = ["virus", "ricochet", "drain", "dust"];
+   var twnLoc = ["exchange", "inn", "hospital", "retire", "diner"];
+   var dinerlog = ["I heard if you're sturdy enough you can rob the exchange but it will close forever"]
+   var accdamage = 0;
+   var damage = 0;
+   var day = 0;
+   var score = 0;
+   var n = 0;
+   var stage = 0; 
+   var round = {tclip:0, cturn:0}; 
+   var choice = {town:null, shop:null, inn:null, ability:null, bulllet:null, retire:null};
+   var player = {name:"hello", hp:10, hpup:0, acc:75, ability:"virus", clip:[], tb:0, cb:0, rb:0, sb:0, idols:[]};
+   var enemy = {name:"hello", hp:10, acc:75, ability:"virus", clip:[], tb:0, cb:0, rb:0, sb:0};
+   player.name = prompt(player.name + " player! what is your name?");
+   alert(player.name+" welcome to bullet game 2");
+   if (player.name = "debug") {
+   player.rb = 50;
+   }
+   stage = 1;
+   while (stage < 4) {
+    //town wander phase
+	if (stage == 1) {
+     player.rb = player.rb + 9;
+     //first town wander stage
+	 while (stage == 1) {
+	  choice.town = prompt(twnLoc+ "?");
+	  //exchange
+	  if (choice.town == twnLoc[0]) {
+	   alert("welcome to the one way bullet exchange");
+	   while (choice.town == twnLoc[0]){
+		choice.shop = prompt("I see you have: "+player.cb+" cheap bullets, "+player.rb+" regular bullets, and "+player.sb+" special bullets. type 'cheap' to trade 1 regular bullet for 3 cheap bullets, type 'special' to trade 3 regular bullets for 1 special bullets. You can also type 'idol' to get a random idol to use in battle, but it will cost you 5 regular bullets. you currently have " + player.idols.length + " out of 5. type anything else to leave");
+	    if (choice.shop == "cheap") {
+	     if (player.rb >= 1){ 
+		  player.rb = player.rb - 1;
+		  player.cb = player.cb + 3;
+		 } else {alert("you can't afford that!");}
+		} else if (choice.shop == "special") {
+	     if (player.rb >= 3){ 
+		  player.rb = player.rb - 3;
+		  player.sb = player.sb + 1;
+		 } else {alert("you can't afford that!");}
+		} else if (choice.shop == "rob" && player.hp > 10) {
+		  player.cb = player.cb + 10;
+		  player.rb = player.rb + 10;
+		  player.sb = player.sb + 10;
+		  twnLoc[0] = "@$^&!*$*(@";
+		  alert("you rob the exchange and it closes forever");
+		  choice.town = null;
+		} else if (choice.shop == "idol") {
+		 if (player.rb >= 5) {
+		  if (idolmachine.length > 0) {
+		   player.idols.push(idolmachine[0]);
+           alert("you recieved a " + idolmachine[0] + " idol.")
+           idolmachine.shift();
+           player.rb = player.rb - 5;		   
+		  } else {alert("out of order");}
+		 } else {alert("you can't afford that!");}
+		} else {
+		 choice.town = null;
+		 alert("see you soon");
+		}
+		
+	   }
+	  
+	  }//end exchange
+	  //inn
+	  if (choice.town == twnLoc[1]) {
+	   choice.inn = prompt("Welcome to the arena's offically sponsored Inn! Will you be competing tomorrow morning?");
+	   if (choice.inn == "yes") {
+	    choice.ability = prompt("In your room at the inn you see five idols of power. Which shall you pray to before tomorrow's match? " + ability + " type nothing to skip ")
+	    if (choice.ability == ability[0]) {player.ability = ability[0]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[1]) {player.ability = ability[1]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[2]) {player.ability = ability[2]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[3]) {player.ability = ability[3]; alert("your " +player.ability+ " prayers have been answered");
+		} else {alert("you choose not to pray tonight")}
+	    day = day + 1;
+	    stage = 2;
+	   } else {
+	   choice.inn = null;
+	   choice.town = null;
+	   }
+	  }//end inn
+	  //hospital
+      if (choice.town == twnLoc[2]) {
+	   alert("welcome to the hospital");
+	   while (choice.town == twnLoc[2]){
+		choice.shop = prompt("I see you have: "+player.hp+" hit points "+player.rb+" regular bullets, and "+player.sb+" special bullets. type 'heal' to trade 1 regular bullet to restore your health and accuracy, type 'upgrade' to trade 1 special bullet for 15 more hit points. and type anything else to leave");
+	    if (choice.shop == "heal") {
+	     if (player.rb >= 1){ 
+		  player.rb = player.rb - 1;
+		  player.hp = player.hpup + 10;
+		  player.acc = 75
+		 }
+		 else {alert("you can't afford that!");}
+		} else if (choice.shop == "upgrade") {
+	     if (player.sb >= 1){ 
+		  player.sb = player.sb - 1;
+		  player.hpup = player.hpup + 2;
+		  player.hp = player.hpup + 10;
+		 }
+		 else {alert("you can't afford that!");}
+		} else {
+		 choice.town = null;
+		 alert("see you soon");
+		}
+		
+	   }
+	  }//end hospital
+      //retire code	  
+	  if (choice.town == twnLoc[3]) {
+	   choice.retire = prompt("are you sure you want to retire?")
+	   if (choice.retire == "yes") {
+	    stage = 6
+	   }
+	  }//end retire
+	  //diner code
+      if (choice.town == twnLoc[4]) {
+	   alert("enter diner");
+	   alert(dinerlog[0]);
+	   alert("leave diner");
+	  }//end diner
+     }
+    }
+	//pre-battle phase
+	if (stage == 2) {
+	if (player.cb + player.rb + player.sb == 0) {player.cb = 3; alert("i see you're broke, have 3 pity bullets")};
+	 n = rng(4, 0)
+	 enemy.name = names[n]
+	 enemy.hp = 10 + rng(day, 1)
+	 enemy.cb = rng(day, 1) + 1
+	 enemy.rb = rng(day, 1) + 1
+	 enemy.sb = rng(day, 1)
+	 n = rng(4, 0)
+//add responsive ability decision further in the game
+	 enemy.ability = ability[n]
+     if (enemy.name == "THE BOSS") {
+	  enemy.hp = 45
+	  enemy.cb = 0
+	  enemy.rb = 0
+	  enemy.sb = 6
+	  enemy.ability = "virus"
+	 }	 
+	 alert(enemy.name + enemy.hp + enemy.cb + enemy.rb + enemy.sb + enemy.ability)
+     player.tb = player.cb + player.rb + player.sb
+	 enemy.tb = enemy.cb + enemy.rb + enemy.sb
+	 while (stage == 2){
+	  //player clip add loop
+	  while (player.tb > 0){
+	   choice.bullet = prompt("I see you have: "+player.cb+" cheap bullets, "+player.rb+" regular bullets, and "+player.sb+" special bullets. type c to load a cheap bullet, r to load a regular bullet, and s to load a special bullet. " + player.clip + player.tb);
+	   if (choice.bullet == "c"){
+	    if (player.cb > 0) {player.clip.push("c"); player.cb = player.cb - 1; } }
+	   if (choice.bullet == "r"){
+	    if (player.rb > 0) {player.clip.push("r"); player.rb = player.rb - 1; } }
+	   if (choice.bullet == "s"){
+	    if (player.sb > 0) {player.clip.push("s"); player.sb = player.sb - 1; } }
+	   player.tb = player.cb + player.rb + player.sb
+	   if (player.clip.length > 5) {player.tb = 0;}
+	   }
+	   //enemy clip add loop
+	  while (enemy.tb > 0){
+	   n = rng(3, 0)
+	   choice.bullet = ebc [n]
+	   if (choice.bullet == "c"){
+	    if (enemy.cb > 0) {enemy.clip.push("c"); enemy.cb = enemy.cb - 1; } }
+	   if (choice.bullet == "r"){
+	    if (enemy.rb > 0) {enemy.clip.push("r"); enemy.rb = enemy.rb - 1; } }
+	   if (choice.bullet == "s"){
+	    if (enemy.sb > 0) {enemy.clip.push("s"); enemy.sb = enemy.sb - 1; } }
+	   enemy.tb = enemy.cb + enemy.rb + enemy.sb
+	   if (enemy.clip.length > 5) {enemy.tb = 0;}
+	  }
+	  alert("player clip " + player.clip + ". enemy clip" + enemy.clip + ".");
+	  stage = 3;	  
+	  }
+	 }
+	 //battle start
+	 if (stage == 3) {
+	  alert("the battle begins!");
+	  round.tclip = player.clip.length + enemy.clip.length
+	  //back and forth loop
+	  while (player.hp > 0 && enemy.hp > 0 && round.tclip > 0){
+	   //player turn code
+	   //use idol code
+	   if (player.idols.length > 0) {
+	    choice.ability = prompt("you have " +player.idols.length+ " idols with you, do you wish to use one? " + player.idols + " type nothing to skip ")
+	    if (choice.ability == ability[0]) {player.ability = ability[0]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[1]) {player.ability = ability[1]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[2]) {player.ability = ability[2]; alert("your " +player.ability+ " prayers have been answered");
+		} else if (choice.ability == ability[3]) {player.ability = ability[3]; alert("your " +player.ability+ " prayers have been answered");
+		}
+	   }
+	   //player shot code
+	   if (player.clip.length > 0) {
+	    damage = 0;
+		accdamage = 0;
+	    n = rng(100,1)
+	    //cheap bullet code
+	    if (player.clip[0] == "c") {
+         if (n % 2 == 1) {
+		  damage = 2;
+		  //cheap protection
+		  if (player.ability == "drain" && player.hp < 10 + player.hpup) {
+		   player.hp = player.hp + 2;
+		   alert(player.ability)
+		   //cheap null hit
+		  } else if (player.ability == "virus" && enemy.ability == player.ability) {
+		   damage = 3;
+		   alert(player.ability)
+		  }
+		 } else if (n % 2 == 0) {
+		  damage = 0;
+		  //cheap null miss
+		  if (player.ability == "virus") {
+		   player.acc = 75;
+		   alert(player.ability + player.acc);
+		  //cheap dust
+		  } else if (player.ability == "dust") {
+		   accdamage = 4;
+		   alert(player.ability);
+		   //cheap ricochet
+		  } else if (player.ability == "ricochet") {
+		   damage = 1;
+		   alert(player.ability)
+		  }
+		 }
+		}//end of cheap bullet code
+		// regular bullet code
+	    if (player.clip[0] == "r") {
+         if (n <= player.acc) {
+		  damage = 4;
+		  //regular null
+		  if (player.ability == "virus" && player.ability == enemy.ability) {
+		   damage = 6;
+		   alert(player.ability)
+		  //regular protection
+		  } else if (player.ability == "drain" && player.hp < 10 + player.hpup){
+		   player.hp = player.hp + 4;
+		   alert(player.ability)
+		  }
+		 } else if (n > player.acc) {
+		  damage = 0;
+		  //regular dust
+		  if (player.ability == "dust") {
+		   accdamage = 7;
+		   alert(player.ability);
+		  //regular ricochet
+		  } else if (player.ability == "ricochet" && n % 2 == 1) {
+		   damage = 4;
+		   alert(player.ability);
+		  }
+		 }
+		}//end of regular bullet code
+		//speical bullet code
+	    if (player.clip[0] == "s") {
+		 if (n <= player.acc) {
+		  damage = 7;
+		  //special null
+		  if (player.ability == "virus") {
+		   if (player.ability != enemy.ability) {
+		    enemy.ability = "virus";
+		   } else if (player.ability == enemy.ability){
+		    damage = 9;
+		   }
+		   alert(player.ability + enemy.ability)
+		  //special protection
+		  } else if (player.ability == "drain"){
+		   player.hp = 10 + player.hpup;
+		   alert(player.ability + player.hp)
+		  }
+		 } else if (n > player.acc) {
+		  damage = 0;
+		  //regular dust
+		  if (player.ability == "dust") {
+		   accdamage = 10;
+		   alert(player.ability + "storm");
+		  //regular ricochet
+		  } else if (player.ability == "ricochet") {
+		   damage = 8;
+		   alert(player.ability);
+		  }
+		 }
+	    }//end of special bullet code
+        //end of player turn code	
+        enemy.hp = enemy.hp - damage
+        enemy.acc = enemy.acc - accdamage		
+	    alert(player.name + " shot "+ enemy.name + " for " + damage + " damage. Leaving " + enemy.name + " with " + enemy.hp + " and " + enemy.acc)
+	    player.clip.shift();
+	    round.tclip = player.clip.length + enemy.clip.length;
+        alert(player.name +" has "+ player.clip.length + " bullets left " + player.clip);		
+	    } else {
+	   //no bullet code
+	    alert(player.name + "is out of bullets." + player.clip); round.tclip = player.clip.length + enemy.clip.length;}
+	  //enemy turn
+	   if (enemy.clip.length > 0) {
+	    damage = 0;
+		accdamage = 0;
+	    n = rng(100,1)
+	    //cheap bullet code
+	    if (enemy.clip[0] == "c") {
+         if (n % 2 == 1) {
+		  damage = 2;
+		  //cheap protection
+		  if (enemy.ability == "drain" && enemy.hp < 10 + day) {
+		   enemy.hp = enemy.hp + 2;
+		   alert(enemy.ability)
+		   //cheap null hit
+		  } else if (enemy.ability == "virus" && enemy.ability == player.ability) {
+		   damage = 3;
+		   alert(enemy.ability)
+		  }
+		 } else if (n % 2 == 0) {
+		  damage = 0;
+		  //cheap null
+		  if (enemy.ability == "virus") {
+		   alert(enemy.ability + enemy.acc);
+		   enemy.acc = 75;
+		  //cheap dust
+		  } else if (enemy.ability == "dust") {
+		   accdamage = 2;
+		   alert(enemy.ability);
+		  //cheap ricochet
+		  } else if (enemy.ability == "ricochet") {
+		   damage = 1;
+		   alert(enemy.ability)
+		  }
+		 }
+		}//end of cheap bullet code
+		// regular bullet code
+	    if (enemy.clip[0] == "r") {
+         if (n <= enemy.acc) {
+		  damage = 4;
+		  //regular null
+		  if (enemy.ability == "virus" && player.ability == enemy.ability) {
+		   damage = 6;
+		   alert(enemy.ability)
+		  //regular protection
+		  } else if (enemy.ability == "drain" && enemy.hp < 10 + day){
+		   enemy.hp = enemy.hp + 1;
+		   alert(enemy.ability)
+		  }
+		 } else if (n > enemy.acc) {
+		  damage = 0;
+		  //regular dust
+		  if (enemy.ability == "dust") {
+		   accdamage = 7;
+		   alert(enemy.ability);
+		  //regular ricochet
+		  } else if (enemy.ability == "ricochet" && n % 2 == 1) {
+		   damage = 4;
+		   alert(enemy.ability);
+		  }
+		 }
+		}//end of regular bullet code
+		//speical bullet code
+	    if (enemy.clip[0] == "s") {
+		 if (n <= enemy.acc) {
+		  damage = 7;
+		  //special null
+		  if (enemy.ability == "virus") {
+		   if (player.ability != enemy.ability) {
+		    player.ability = "virus";
+		   } else if (player.ability == enemy.ability){
+		    damage = 9;
+		   }
+		   alert(player.ability + enemy.ability)
+		  //special protection
+		  } else if (enemy.ability == "drain"){
+		   enemy.hp = 10 + day;
+		   alert(enemy.ability + enemy.hp)
+		  }
+		 } else if (n > enemy.acc) {
+		  damage = 0;
+		  //regular dust
+		  if (enemy.ability == "dust") {
+		   accdamage = 10;
+		   alert(enemy.ability + "storm");
+		  //regular ricochet
+		  } else if (enemy.ability == "ricochet") {
+		   damage = 8;
+		   alert(enemy.ability);
+		  }
+		 }
+	    }//end of special bullet code
+        //end of player turn code	
+        player.hp = player.hp - damage
+        player.acc = player.acc - accdamage		
+	    alert(enemy.name + " shot "+ player.name + " for " + damage + " damage. Leaving " + player.name + " with " + player.hp + " and " + player.acc)
+	    enemy.clip.shift();
+	    round.tclip = player.clip.length + enemy.clip.length;
+        alert(enemy.name +" has "+ enemy.clip.length + " bullets left " + enemy.clip);		
+	    } else {
+	   //no bullet code
+	    alert(enemy.name + "is out of bullets." + enemy.clip); round.tclip = player.clip.length + enemy.clip.length;}
+	 }//end of back and forth loop
+	 
+	 
+	 // end of round wrapup
+	 //player health loss
+	 if (player.hp <= 0) {
+	 alert("you lost!");
+	 stage = 4;
+	 //enemy health loss
+	 } else if (enemy.hp <= 0) {
+	  alert ("you won!");
+	  while (round.tclip > 0) {
+	   if (player.clip.length > 0) {
+	    if (player.clip[0] == "c") {player.cb = player.cb + 1; player.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+		if (player.clip[0] == "r") {player.rb = player.rb + 1; player.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+		if (player.clip[0] == "s") {player.sb = player.sb + 1; player.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+	   }
+	   if (enemy.clip.length > 0) {
+	    if (enemy.clip[0] == "c") {player.cb = player.cb + 1; enemy.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+		if (enemy.clip[0] == "r") {player.rb = player.rb + 1; enemy.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+		if (enemy.clip[0] == "s") {player.sb = player.sb + 1; enemy.clip.shift(); round.tclip = player.clip.length + enemy.clip.length;}
+	   }
+	  }
+	  alert(player.name + player.cb + player.rb + player.sb)
+	  stage = 1
+	 } else {stage = 1;}
+	 
+	}// end of stage 3
+   }//end of game code
+   //good ending code
+   if (stage == 6) {
+   score = score + player.cb * 1.5;
+   score = score + player.rb * 10;
+   score = score + player.sb * 30;
+   score = score + player.hp * 20;
+   score = score * day;
+   alert(score + "$ is your winnings");
+   }
+   if (stage == 4) {
+   alert("bad ending")
+   }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+   </script>
+   </body>
+</html>

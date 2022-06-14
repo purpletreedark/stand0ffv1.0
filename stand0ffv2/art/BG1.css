@@ -1,0 +1,13 @@
+html {
+   height: 100%;
+   -webkit-animation: BG 120s linear normal infinite;
+   animation: BG 120s linear normal infinite;
+  }
+@keyframes BG {
+   0% {background-color: White;}
+   40% {background-color: Grey;}
+   60% {background-color: Silver;}
+   80% {background-color: Grey;}
+   100% {background-color: White;}
+   }
+   
